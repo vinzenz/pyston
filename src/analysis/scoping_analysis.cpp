@@ -159,6 +159,7 @@ public:
     virtual bool visit_continue(AST_Continue* node) { return false; }
     virtual bool visit_dict(AST_Dict* node) { return false; }
     virtual bool visit_dictcomp(AST_DictComp* node) { return false; }
+    virtual bool visit_set(AST_Set* node) { return false; }
     virtual bool visit_excepthandler(AST_ExceptHandler* node) { return false; }
     virtual bool visit_expr(AST_Expr* node) { return false; }
     virtual bool visit_for(AST_For* node) { return false; }

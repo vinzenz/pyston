@@ -97,6 +97,7 @@ TYPE_MAP = {
 
 if sys.version_info >= (2,7):
     TYPE_MAP[_ast.DictComp] = 15
+    TYPE_MAP[_ast.SetComp] = 87
     TYPE_MAP[_ast.Set] = 43
 
 def convert(n, f):

@@ -116,6 +116,7 @@ enum AST_TYPE {
     FloorDiv = 86,
     DictComp = 15,
     Set = 43,
+    SetComp = 87,
 
     // Pseudo-nodes that are specific to this compiler:
     Branch = 200,
@@ -665,6 +666,32 @@ public:
     static const AST_TYPE::AST_TYPE TYPE = AST_TYPE::Return;
 };
 
+class AST_Set : public AST_expr {
+public:
+    std::vector<AST_expr*> elts;
+    AST_TYPE::AST_TYPE ctx_type;
+
+    virtual void accept(ASTVisitor* v);
+    virtual void* accept_expr(ExprVisitor* v);
+
+    AST_Set() : AST_expr(AST_TYPE::Set) {}
+
+    const static AST_TYPE::AST_TYPE TYPE = AST_TYPE::Set;
+};
+
+class AST_SetComp : public AST_expr {
+public:
+    std::vector<AST_comprehension*> generators;
+    AST_expr* elt;
+
+    virtual void accept(ASTVisitor* v);
+    virtual void* accept_expr(ExprVisitor* v);
+
+    AST_SetComp() : AST_expr(AST_TYPE::SetComp) {}
+
+    const static AST_TYPE::AST_TYPE TYPE = AST_TYPE::SetComp;
+};
+
 class AST_Slice : public AST_expr {
 public:
     AST_expr* lower, *upper, *step;
@@ -912,6 +939,8 @@ public:
     virtual bool visit_raise(AST_Raise* node) { RELEASE_ASSERT(0, ""); }
     virtual bool visit_repr(AST_Repr* node) { RELEASE_ASSERT(0, ""); }
     virtual bool visit_return(AST_Return* node) { RELEASE_ASSERT(0, ""); }
+    virtual bool visit_set(AST_Set* node) { RELEASE_ASSERT(0, ""); }
+    virtual bool visit_setcomp(AST_SetComp* node) { RELEASE_ASSERT(0, ""); }
     virtual bool visit_slice(AST_Slice* node) { RELEASE_ASSERT(0, ""); }
     virtual bool visit_str(AST_Str* node) { RELEASE_ASSERT(0, ""); }
     virtual bool visit_subscript(AST_Subscript* node) { RELEASE_ASSERT(0, ""); }
@@ -973,6 +1002,8 @@ public:
     virtual bool visit_raise(AST_Raise* node) { return false; }
     virtual bool visit_repr(AST_Repr* node) { return false; }
     virtual bool visit_return(AST_Return* node) { return false; }
+    virtual bool visit_set(AST_Set* node) { return false; }
+    virtual bool visit_setcomp(AST_SetComp* node) { return false; }
     virtual bool visit_slice(AST_Slice* node) { return false; }
     virtual bool visit_str(AST_Str* node) { return false; }
     virtual bool visit_subscript(AST_Subscript* node) { return false; }
@@ -1009,6 +1040,8 @@ public:
     virtual void* visit_name(AST_Name* node) { RELEASE_ASSERT(0, ""); }
     virtual void* visit_num(AST_Num* node) { RELEASE_ASSERT(0, ""); }
     virtual void* visit_repr(AST_Repr* node) { RELEASE_ASSERT(0, ""); }
+    virtual void* visit_set(AST_Set* node) { RELEASE_ASSERT(0, ""); }
+    virtual void* visit_setcomp(AST_SetComp* node) { RELEASE_ASSERT(0, ""); }
     virtual void* visit_slice(AST_Slice* node) { RELEASE_ASSERT(0, ""); }
     virtual void* visit_str(AST_Str* node) { RELEASE_ASSERT(0, ""); }
     virtual void* visit_subscript(AST_Subscript* node) { RELEASE_ASSERT(0, ""); }
@@ -1101,6 +1134,8 @@ public:
     virtual bool visit_raise(AST_Raise* node);
     virtual bool visit_repr(AST_Repr* node);
     virtual bool visit_return(AST_Return* node);
+    virtual bool visit_set(AST_Set* node);
+    virtual bool visit_setcomp(AST_SetComp* node);
     virtual bool visit_slice(AST_Slice* node);
     virtual bool visit_str(AST_Str* node);
     virtual bool visit_subscript(AST_Subscript* node);

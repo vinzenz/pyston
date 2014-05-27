@@ -689,6 +689,33 @@ void AST_Return::accept_stmt(StmtVisitor* v) {
     v->visit_return(this);
 }
 
+void AST_Set::accept(ASTVisitor* v) {
+    bool skip = v->visit_set(this);
+    if (skip)
+        return;
+    visitVector(elts, v);
+}
+
+void* AST_Set::accept_expr(ExprVisitor* v) {
+    return v->visit_set(this);
+}
+
+void AST_SetComp::accept(ASTVisitor* v) {
+    bool skip = v->visit_setcomp(this);
+    if (skip)
+        return;
+
+    for (auto c : generators) {
+        c->accept(v);
+    }
+
+    elt->accept(v);
+}
+
+void* AST_SetComp::accept_expr(ExprVisitor* v) {
+    return v->visit_setcomp(this);
+}
+
 void AST_Slice::accept(ASTVisitor* v) {
     bool skip = v->visit_slice(this);
     if (skip)
@@ -1383,6 +1410,28 @@ bool PrintVisitor::visit_repr(AST_Repr* node) {
 bool PrintVisitor::visit_return(AST_Return* node) {
     printf("return ");
     return false;
+}
+
+bool PrintVisitor::visit_set(AST_Set* node) {
+    printf("{");
+    for (int i = 0, n = node->elts.size(); i < n; ++i) {
+        if (i > 0)
+            printf(", ");
+        node->elts[i]->accept(this);
+    }
+    printf("}");
+    return true;
+}
+
+bool PrintVisitor::visit_setcomp(AST_SetComp* node) {
+    printf("{");
+    node->elt->accept(this);
+    for (auto c : node->generators) {
+        printf(" ");
+        c->accept(this);
+    }
+    printf("}");
+    return true;
 }
 
 bool PrintVisitor::visit_slice(AST_Slice* node) {
