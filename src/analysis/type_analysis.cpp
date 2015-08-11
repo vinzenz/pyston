@@ -79,9 +79,9 @@ static BoxedClass* simpleCallSpeculation(AST_Call* node, CompilerType* rtn_type,
 
 typedef llvm::DenseMap<InternedString, CompilerType*> TypeMap;
 typedef llvm::DenseMap<CFGBlock*, TypeMap> AllTypeMap;
-typedef llvm::DenseMap<AST_expr*, CompilerType*> ExprTypeMap;
-typedef llvm::DenseMap<AST_expr*, BoxedClass*> TypeSpeculations;
-class BasicBlockTypePropagator : public ExprVisitor, public StmtVisitor {
+typedef llvm::DenseMap<AST*, CompilerType*> ExprTypeMap;
+typedef llvm::DenseMap<AST*, BoxedClass*> TypeSpeculations;
+class BasicBlockTypePropagator : public ExprVisitor, public StmtVisitor, public SliceVisitor {
 private:
     static const bool EXPAND_UNNEEDED = true;
 
@@ -130,6 +130,21 @@ private:
             }
         }
         return old_type;
+    }
+
+    CompilerType* getType(AST_slice* node) {
+        type_speculations.erase(node);
+
+        void* raw_rtn = node->accept_slice(this);
+        CompilerType* rtn = static_cast<CompilerType*>(raw_rtn);
+
+        if (VERBOSITY() >= 3) {
+            print_ast(node);
+            printf(" %s\n", rtn->debugName().c_str());
+        }
+
+        expr_types[node] = rtn;
+        return rtn;
     }
 
     CompilerType* getType(AST_expr* node) {
@@ -682,6 +697,7 @@ public:
         return rtn;
     }
 
+    BoxedClass* speculatedExprClass(AST_slice* call) override { return type_speculations[call]; }
     BoxedClass* speculatedExprClass(AST_expr* call) override { return type_speculations[call]; }
 
     static bool merge(CompilerType* lhs, CompilerType*& rhs) {
